@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 /**
  * Response headers applied to every route.
@@ -27,4 +28,24 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+/**
+ * Sentry build integration.
+ *
+ * `tunnelRoute` sends browser error reports to /monitoring on this origin,
+ * which forwards them to Sentry. That keeps the CSP's connect-src at 'self'
+ * instead of allow-listing an ingest host, and it survives ad blockers.
+ *
+ * Source maps upload only when SENTRY_AUTH_TOKEN (plus SENTRY_ORG and
+ * SENTRY_PROJECT) are present -- a local or preview build without them skips
+ * the upload quietly instead of failing.
+ */
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  tunnelRoute: "/monitoring",
+  widenClientFileUpload: true,
+  sourcemaps: { disable: !process.env.SENTRY_AUTH_TOKEN },
+  silent: !process.env.CI,
+  telemetry: false,
+});

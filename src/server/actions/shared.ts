@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
 
 import { fieldErrors } from "@/lib/validation";
@@ -52,6 +53,11 @@ export function toActionState(error: unknown): ActionState {
     return { ok: false, message: error.message };
   }
 
+  // The action returns a friendly message instead of throwing, which also means
+  // Next.js never sees the failure -- so this is the one place a server action
+  // bug gets reported. Expected outcomes (validation, domain errors, auth) have
+  // already returned above and are deliberately not reported.
+  Sentry.captureException(error);
   console.error("[kitaflux] unhandled action error", error);
   return { ok: false, message: "Something went wrong. Please try again." };
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
 import { RotateCcw } from "lucide-react";
 
@@ -14,7 +15,9 @@ export default function AppError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Sentry picks this up in production once DSN is configured.
+    // Next.js catches this before any global handler, so report it explicitly.
+    // A no-op when NEXT_PUBLIC_SENTRY_DSN is not set.
+    Sentry.captureException(error);
     console.error("[kitaflux] route error", error);
   }, [error]);
 

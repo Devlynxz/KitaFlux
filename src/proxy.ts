@@ -25,6 +25,7 @@ export function proxy(request: NextRequest) {
   const policy = buildContentSecurityPolicy({
     nonce,
     isDev: process.env.NODE_ENV === "development",
+    sentryDsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
   });
 
   const requestHeaders = new Headers(request.headers);
@@ -39,12 +40,12 @@ export function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     {
-      // Documents only. Excluded: Better Auth and Inngest (JSON APIs), build
-      // assets and public files (no document to protect), and the two route
-      // handlers that stream a PDF or CSV. Those still get frame-ancestors,
-      // nosniff and the rest from next.config.ts.
+      // Documents only. Excluded: Better Auth and Inngest (JSON APIs), the
+      // Sentry tunnel (/monitoring), build assets and public files (no document
+      // to protect), and the two route handlers that stream a PDF or CSV. Those
+      // still get frame-ancestors, nosniff and the rest from next.config.ts.
       source:
-        "/((?!api/|_next/static|_next/image|favicon|brand/|manifest\\.webmanifest|reports/export|invoices/[^/]+/pdf).*)",
+        "/((?!api/|monitoring|_next/static|_next/image|favicon|brand/|manifest\\.webmanifest|reports/export|invoices/[^/]+/pdf).*)",
       // Prefetches carry no document the browser will execute.
       missing: [
         { type: "header", key: "next-router-prefetch" },

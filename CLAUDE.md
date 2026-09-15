@@ -45,7 +45,7 @@ CI (`.github/workflows/ci.yml`) runs, in order: `db:deploy`, `typecheck`, `lint`
 and aliases `server-only` to `src/test/server-only-stub.ts` so `server/data/*` is
 importable from tests.
 
-166 tests total: 114 pure-logic, 52 behind a database. The four DB-backed suites
+179 tests total: 127 pure-logic, 52 behind a database. The four DB-backed suites
 (`server/__tests__/isolation`, `invoice-number`, `invoice-lifecycle`, `pagination`) gate themselves on
 `const describeDb = DATABASE_URL ? describe : describe.skip`. **That guard tests only
 whether the env var is set, never whether the database is reachable**, which gives two
@@ -54,9 +54,9 @@ distinct failure modes:
 - `DATABASE_URL` unset → 52 tests skip cleanly, suite is green. A green run in this state
   has *not* verified tenant isolation.
 - `DATABASE_URL` set but the database is unreachable or credentials are wrong → the
-  `describeDb` blocks run, `beforeAll` throws, and the three files **fail** while their
+  `describeDb` blocks run, `beforeAll` throws, and those files **fail** while their
   tests are still reported as `skipped`. Read the *file* count, not the test count:
-  `Test Files 4 failed | 8 passed` with `Tests 114 passed | 52 skipped` means the database
+  `Test Files 4 failed | 9 passed` with `Tests 127 passed | 52 skipped` means the database
   is broken, not that the tests were skipped by the guard.
 
 Verify the database is genuinely exercised before trusting a pass.
