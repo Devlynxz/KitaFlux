@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
 import { after } from "next/server";
 
@@ -55,6 +56,7 @@ export const auth = betterAuth({
       "/request-password-reset": { window: 60 * 15, max: 3 },
       "/reset-password": { window: 60 * 15, max: 5 },
       "/change-password": { window: 60 * 15, max: 5 },
+      "/delete-user": { window: 60 * 15, max: 5 },
     },
   },
 
@@ -65,6 +67,20 @@ export const auth = betterAuth({
   },
 
   user: {
+    // Account deletion. Better Auth's own endpoint does the work -- it checks
+    // the password, deletes the user row (Postgres cascades clients, invoices,
+    // line items and payments from it), removes every session and clears the
+    // cookie. The hook below narrows *how* it may be called.
+    deleteUser: {
+      enabled: true,
+      afterDelete: async (user) => {
+        // Reset-password tokens point at the user by id and outlive it. They
+        // can no longer be redeemed, but they are still data about someone who
+        // asked to be forgotten.
+        await prisma.verification.deleteMany({ where: { value: user.id } });
+      },
+    },
+
     // Extra profile columns live on the same `user` row rather than a side
     // table -- they are 1:1 with the account and read on nearly every page.
     //
@@ -94,6 +110,28 @@ export const auth = betterAuth({
     // Which request header holds a client IP that cannot be forged, per host.
     // See src/server/client-ip.ts.
     ipAddress: clientIp.config,
+  },
+
+  hooks: {
+    before: createAuthMiddleware(async (ctx) => {
+      // Better Auth deletes an account *without a password* when the session
+      // is under a day old, and also accepts an emailed token. Neither is
+      // acceptable here: a session cookie copied off a shared computer would be
+      // enough to erase someone's income records permanently. Deletion always
+      // requires the current password, so the rate limit above applies to it.
+      if (ctx.path === "/delete-user") {
+        const body = (ctx.body ?? {}) as { password?: unknown; token?: unknown };
+        if (typeof body.password !== "string" || body.password.length === 0 || body.token !== undefined) {
+          throw new APIError("BAD_REQUEST", {
+            message: "Enter your password to delete your account.",
+            code: "PASSWORD_REQUIRED",
+          });
+        }
+      }
+      if (ctx.path === "/delete-user/callback") {
+        throw new APIError("NOT_FOUND");
+      }
+    }),
   },
 
   // Must stay last.
