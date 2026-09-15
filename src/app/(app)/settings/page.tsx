@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { AccountDataSettings } from "@/components/app/account-data-settings";
 import { SecuritySettings } from "@/components/app/security-settings";
 import { SettingsForm } from "@/components/app/settings-form";
 import { PageHeader } from "@/components/ui/primitives";
@@ -15,7 +16,11 @@ export default async function SettingsPage() {
   // is up to without being able to change it.
   const counter = await prisma.user.findUnique({
     where: { id: user.id },
-    select: { invoiceSeq: true },
+    select: {
+      invoiceSeq: true,
+      // Shown in the delete warning, so "this deletes 58 invoices" is concrete.
+      _count: { select: { clients: true, invoices: true, payments: true } },
+    },
   });
 
   return (
@@ -44,6 +49,11 @@ export default async function SettingsPage() {
       />
 
       <SecuritySettings />
+
+      <AccountDataSettings
+        email={user.email}
+        counts={counter?._count ?? { clients: 0, invoices: 0, payments: 0 }}
+      />
     </div>
   );
 }

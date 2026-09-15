@@ -42,10 +42,11 @@ export const config = {
     {
       // Documents only. Excluded: Better Auth and Inngest (JSON APIs), the
       // Sentry tunnel (/monitoring), build assets and public files (no document
-      // to protect), and the two route handlers that stream a PDF or CSV. Those
-      // still get frame-ancestors, nosniff and the rest from next.config.ts.
+      // to protect), and the route handlers that stream a download (PDF, CSV,
+      // account export). Those still get frame-ancestors, nosniff and the rest
+      // from next.config.ts.
       source:
-        "/((?!api/|monitoring|_next/static|_next/image|favicon|brand/|manifest\\.webmanifest|reports/export|invoices/[^/]+/pdf).*)",
+        "/((?!api/|monitoring|_next/static|_next/image|favicon|brand/|manifest\\.webmanifest|reports/export|settings/export|invoices/[^/]+/pdf).*)",
       // Prefetches carry no document the browser will execute.
       missing: [
         { type: "header", key: "next-router-prefetch" },
