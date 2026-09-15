@@ -65,6 +65,7 @@ superseded by the asset set above and are no longer referenced by the app.
 - **decimal.js** for all money math. No `Number`, ever.
 - **@react-pdf/renderer** for invoice PDFs
 - **Resend** for email, **Inngest** for scheduled reminders
+- **Sentry** for error monitoring (optional; off without a DSN)
 - **Vitest** for tests
 
 ## Getting started
@@ -86,8 +87,8 @@ cp .env.example .env
 - `DATABASE_URL` — any Postgres 14+ instance (local, Neon, Supabase).
 - `BETTER_AUTH_SECRET` — generate with `openssl rand -base64 32`.
 
-Everything else is optional; the app runs without email, Inngest or an FX API
-key. Then:
+Everything else is optional; the app runs without email, Inngest, Sentry or an
+FX API key. Then:
 
 ```bash
 npm run db:migrate
@@ -134,6 +135,7 @@ src/
     (app)/             everything behind auth; the layout is the single gate
       invoices/[id]/pdf/route.ts     streams the PDF
       reports/export/route.ts        streams the quarterly CSV
+      settings/export/route.ts       downloads the account data export
     api/auth/[...all]  Better Auth handler
     api/inngest        scheduled job endpoint
   components/
@@ -146,6 +148,7 @@ src/
     invoice-status.ts  the state machine
     dates.ts           UTC calendar dates and BIR quarters
     validation.ts      zod schemas
+    sentry-scrub.ts    what an error report may carry off the machine
   server/
     data/              user-scoped data access — the only place Prisma is queried
     actions/           server actions; validate, delegate, revalidate
@@ -153,6 +156,9 @@ src/
     pdf/               invoice document
     invoice-number.ts  gapless per-user numbering
     session.ts         requireUser / requireUserId
+  proxy.ts             per-request Content-Security-Policy (nonce)
+  instrumentation*.ts  Sentry registration (server and browser)
+  sentry.*.ts          Sentry options, shared across runtimes
 ```
 
 ### The parts worth reading
@@ -188,13 +194,39 @@ userId } })` rather than a fetch-then-check, so there is no branch to forget.
 Writes use `updateMany`/`deleteMany` for the same reason. `src/server/__tests__/
 isolation.test.ts` asserts this across every read and write path.
 
+**Error monitoring** (`sentry.shared.ts`, `lib/sentry-scrub.ts`) — server
+errors, browser errors, error-boundary crashes and unexpected server action
+failures go to Sentry, with light tracing (10% of requests in production). An
+error report must never carry a user's income records, so every event is
+scrubbed before it leaves the process: request bodies, cookies, query strings
+and all but a few request headers are removed; single-use tokens are cut out of
+every URL, including the `http.target` span attributes and Next.js request
+contexts where the SDK records them separately; console breadcrumbs are dropped;
+and the user is reduced to an opaque id. There is no session replay and no local
+variable capture. Browser reports go through a `/monitoring` tunnel on the app's
+own origin, so the CSP stays at `connect-src 'self'` — except for a self-hosted
+Sentry DSN, which the SDK does not tunnel, whose origin is added to the policy.
+
+**Account export and deletion** (`server/data/account.ts`, `server/auth.ts`) —
+Settings → Your data downloads everything the app holds about the user as one
+JSON file (`kitaflux-export/1`): profile, clients, invoices with line items, and
+payments with the rate each landed at. Amounts are decimal strings, never JSON
+numbers. The password hash, sessions, reset tokens and IP addresses are left out.
+Deleting an account always requires the current password: Better Auth on its own
+deletes without one when the session is under a day old, and a `before` hook
+refuses that path (and the emailed-token path) outright. Deletion is permanent
+and immediate — the user row cascades to clients, invoices, line items,
+payments, sessions and credentials, and leftover reset tokens are removed — so
+the UI puts the export directly above it, since invoices are records a
+freelancer may need to keep after filing.
+
 ## Tests
 
 ```bash
 npm test
 ```
 
-166 tests. The pure-logic suites (money, FX, dates, state machine, CSV, pagination, CSP, client IP) need nothing.
+183 tests. The pure-logic suites (money, FX, dates, state machine, CSV, pagination, CSP, client IP, Sentry scrubbing) need nothing.
 The database-backed suites need `DATABASE_URL` and **skip themselves without
 it** — so CI must set it, or isolation goes unverified.
 
@@ -206,11 +238,13 @@ it** — so CI must set it, or isolation goes unverified.
 | `lib/__tests__/dates` | UTC dates, quarters, timezone edges |
 | `lib/__tests__/csv` | CSV quoting, spreadsheet formula neutralisation |
 | `lib/__tests__/pagination` | page parsing, clamping, page-number window |
+| `lib/__tests__/sentry-scrub` | tokens, bodies, cookies, headers and span attributes stripped from error reports |
 | `server/__tests__/isolation` | cross-tenant access, every path |
 | `server/__tests__/invoice-number` | 20-way concurrent race, rollback gaplessness, double-clicked Send |
 | `server/__tests__/csp` | nonce + strict-dynamic script policy, dev/prod differences, report-only switch |
 | `server/__tests__/client-ip` | spoofed forwarded chains resolve to the real client, per host config |
 | `server/__tests__/pagination` | no row repeated or lost across pages when sort keys tie; totals span every page |
+| `server/__tests__/account` | export holds every owned record and no credentials; deletion cascades every row |
 | `server/__tests__/invoice-lifecycle` | draft → send → part-pay → pay → void, PDF render, currency and date guards |
 
 ## Deploying
@@ -235,14 +269,21 @@ it** — so CI must set it, or isolation goes unverified.
 7. **Reminders:** connect the Inngest app to `/api/inngest` and set
    `INNGEST_EVENT_KEY` / `INNGEST_SIGNING_KEY`. Two daily jobs: a status sweep at
    01:00 UTC and reminder emails at 01:15 UTC (09:00 and 09:15 in Manila).
-8. **FX:** works with no key via Frankfurter (ECB rates). Set
+8. **Error monitoring:** set `NEXT_PUBLIC_SENTRY_DSN` (and optionally
+   `NEXT_PUBLIC_SENTRY_ENVIRONMENT`). Without it Sentry stays disabled and nothing
+   is sent. For readable stack traces set `SENTRY_ORG`, `SENTRY_PROJECT` and
+   `SENTRY_AUTH_TOKEN` at build time; without the token the source map upload is
+   skipped rather than failing the build. `SENTRY_DEBUG=1` prints SDK diagnostics
+   to the server log when events are not arriving.
+9. **FX:** works with no key via Frankfurter (ECB rates). Set
    `FX_PROVIDER=exchangerate.host` and `EXCHANGERATE_HOST_ACCESS_KEY` to switch.
 
 ## Scope
 
 Shipped: auth (sign-up, sign-in, password reset, change password, sign out
-other devices, database-backed rate limiting), clients, invoices, PDF, email, payments with FX and fee capture,
-dashboard, scheduled reminders, quarterly summary and CSV export.
+other devices, database-backed rate limiting), clients, invoices, PDF, email,
+payments with FX and fee capture, dashboard, scheduled reminders, quarterly
+summary and CSV export, account data export and deletion, and error monitoring.
 
 Not built, deliberately: recurring invoices, Stripe payment links. Both are v2 in
 the spec, gated behind having real users.
