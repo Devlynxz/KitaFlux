@@ -1,0 +1,20 @@
+{
+  "primary": "#155EEF",
+  "secondary": "#0E7490",
+  "accent": "#F59E0B",
+  "usd": "#16A34A",
+  "php": "#155EEF",
+  "success": "#16A34A",
+  "warning": "#D97706",
+  "error": "#DC2626",
+  "background": "#F8FAFC",
+  "surface": "#FFFFFF",
+  "textPrimary": "#0F172A",
+  "textSecondary": "#475569",
+  "border": "#E2E8F0",
+  "darkBackground": "#0B1220",
+  "darkSurface": "#111827",
+  "darkTextPrimary": "#F8FAFC",
+  "darkTextSecondary": "#CBD5E1",
+  "darkBorder": "#243244"
+}

@@ -1,0 +1,277 @@
+// ---------------------------------------------------------------------------
+// KitaFlux schema
+//
+// Money columns are Decimal, never float. Two scales are used deliberately:
+//   Decimal(20, 2)  - currency amounts. Every supported currency is a 2-minor-
+//                     unit currency (USD, PHP, EUR, GBP, AUD, CAD, SGD), so the
+//                     storage scale equals the presentation scale and nothing
+//                     is silently truncated on write.
+//   Decimal(20, 10) - FX rates and quantities, where sub-cent precision is real.
+//
+// Every user-owned table carries userId and is indexed on it. Reads go through
+// src/server/data/*, which never builds a where clause without it.
+// ---------------------------------------------------------------------------
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- Better Auth core models ------------------------------------------------
+
+model User {
+  id            String   @id
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  image         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // --- KitaFlux profile ---
+  businessName    String?
+  tin             String?
+  addressLine     String?
+  city            String?
+  country         String  @default("PH")
+  // Currency the user usually bills in.
+  defaultCurrency String  @default("USD")
+  // Currency the user files taxes in. Fixed to PHP today, but modelled so the
+  // conversion code never hardcodes it.
+  homeCurrency    String  @default("PHP")
+  paymentDetails  String?
+  invoicePrefix   String  @default("INV")
+  invoiceNotes    String?
+  // Monotonic counter for gapless per-user invoice numbering. Only ever read
+  // and written inside a SELECT ... FOR UPDATE transaction. See
+  // src/server/invoice-number.ts.
+  invoiceSeq      Int     @default(0)
+
+  sessions Session[]
+  accounts Account[]
+  clients  Client[]
+  invoices Invoice[]
+  payments Payment[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// Better Auth's rate-limit counters. Stored in Postgres rather than in memory:
+// a serverless deployment runs many short-lived instances, and an in-memory
+// counter per instance lets a brute-force attempt spread across them freely.
+model RateLimit {
+  id          String @id
+  key         String @unique
+  count       Int
+  lastRequest BigInt
+
+  @@map("rate_limit")
+}
+
+// --- Domain -----------------------------------------------------------------
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  VOID
+}
+
+model Client {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  email       String
+  company     String?
+  country     String
+  // Currency this client is normally billed in.
+  currency    String    @default("USD")
+  addressLine String?
+  notes       String?
+  archivedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  invoices Invoice[]
+
+  @@index([userId])
+  @@index([userId, archivedAt])
+  @@map("client")
+}
+
+model Invoice {
+  id       String @id @default(cuid())
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Restrict)
+
+  // Human-facing number, e.g. "INV-0007". Assigned on the DRAFT -> SENT
+  // transition, not at creation, so abandoned drafts do not burn numbers.
+  number String?
+  // The raw counter value behind `number`. Both are unique per user; the
+  // constraints are the last line of defence behind the FOR UPDATE lock.
+  seq    Int?
+
+  status InvoiceStatus @default(DRAFT)
+
+  issueDate DateTime @db.Date
+  dueDate   DateTime @db.Date
+  currency  String   @default("USD")
+
+  notes String?
+  terms String?
+
+  subtotal  Decimal @default(0) @db.Decimal(20, 2)
+  taxRate   Decimal @default(0) @db.Decimal(9, 6)
+  taxAmount Decimal @default(0) @db.Decimal(20, 2)
+  total     Decimal @default(0) @db.Decimal(20, 2)
+
+  sentAt         DateTime?
+  paidAt         DateTime?
+  voidedAt       DateTime?
+  lastReminderAt DateTime?
+  reminderCount  Int       @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lineItems LineItem[]
+  payments  Payment[]
+
+  @@unique([userId, number])
+  @@unique([userId, seq])
+  @@index([userId])
+  @@index([userId, status])
+  @@index([userId, dueDate])
+  @@index([clientId])
+  @@map("invoice")
+}
+
+model LineItem {
+  id          String  @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  position    Int
+  description String
+  quantity    Decimal @db.Decimal(20, 10)
+  unitPrice   Decimal @db.Decimal(20, 2)
+  // Persisted, not derived on read: an invoice that has been sent must keep the
+  // exact figures the client received.
+  amount      Decimal @db.Decimal(20, 2)
+
+  @@index([invoiceId])
+  @@map("line_item")
+}
+
+// A payment records the three amounts that are genuinely different:
+//   amountReceived - what the payer platform says it sent, in `currency`
+//   feeAmount      - what the platform or bank took, in `currency`
+//   homeAmount     - what actually landed in the bank, in the home currency,
+//                    at `fxRate` on `receivedAt`
+model Payment {
+  id        String  @id @default(cuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  // Date the money landed. Date-only: the FX rate that applies is the rate for
+  // this calendar day, and a timestamp would invite timezone drift.
+  receivedAt DateTime @db.Date
+
+  currency       String
+  amountReceived Decimal @db.Decimal(20, 2)
+  feeAmount      Decimal @default(0) @db.Decimal(20, 2)
+  // amountReceived - feeAmount, persisted so historical rows never shift.
+  netAmount      Decimal @db.Decimal(20, 2)
+
+  homeCurrency String  @default("PHP")
+  fxRate       Decimal @db.Decimal(20, 10)
+  homeAmount   Decimal @db.Decimal(20, 2)
+  // "cache" | "api" | "manual" - manual means the user typed the real rate
+  // their bank gave them, which is the number that matters for filing.
+  fxRateSource String  @default("manual")
+
+  reference String?
+  note      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, receivedAt])
+  @@index([invoiceId])
+  @@map("payment")
+}
+
+// Daily reference rates, cached so historical records never change
+// retroactively. `date` is the date the rate was requested for; `quoteDate` is
+// the business day the provider actually priced (weekends resolve backwards).
+model FxRate {
+  id        String   @id @default(cuid())
+  base      String
+  quote     String
+  date      DateTime @db.Date
+  quoteDate DateTime @db.Date
+  rate      Decimal  @db.Decimal(20, 10)
+  source    String
+  fetchedAt DateTime @default(now())
+
+  @@unique([base, quote, date])
+  @@index([base, quote, date])
+  @@map("fx_rate")
+}

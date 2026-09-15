@@ -1,0 +1,294 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   KitaFlux design tokens
+
+   Values come straight from kitaflux-brand/colors.json. Semantic names are
+   layered on top of the brand palette so a component never reaches for a raw
+   hex: a status pill asks for --color-success, not #16A34A.
+
+   Dark mode redefines only the semantic layer. The brand hues stay put.
+   --------------------------------------------------------------------------- */
+
+/* ---------------------------------------------------------------------------
+   Font stacks
+
+   These live in a plain :root rule, NOT in @theme, and that is load-bearing.
+
+   Tailwind v4 only emits an @theme variable when some generated utility
+   references it. Nothing in this app uses the `font-sans` or `font-mono`
+   classes -- the faces are applied by the base layer and by `.tabular` -- so
+   when these stacks lived in @theme they were tree-shaken away. `font-family:
+   var(--font-sans)` then resolved to `font-family: , ui-sans-serif, ...`, which
+   is invalid, so the whole declaration was dropped and every surface silently
+   fell back to a system font. The wordmark did too, via `var(--font-display)`
+   in brand/logo.tsx.
+
+   A plain :root rule is always emitted verbatim. @theme below maps its own
+   keys onto these so the utilities stay correct if anyone ever uses them.
+   --------------------------------------------------------------------------- */
+:root {
+  --font-sans-stack:
+    var(--font-sans-face), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-mono-stack:
+    var(--font-mono-face), ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  /* Wordmark only. The UI never uses this. Falls back through the interface
+     face, never through a bare system stack. */
+  --font-display-stack:
+    var(--font-display-face), var(--font-sans-face), ui-sans-serif, system-ui, sans-serif;
+}
+
+@theme {
+  /* Brand */
+  --color-brand-50: #eef4ff;
+  --color-brand-100: #dbe7fe;
+  --color-brand-200: #bfd5fe;
+  --color-brand-300: #93bbfd;
+  --color-brand-400: #6096fa;
+  --color-brand-500: #3b78f6;
+  --color-brand-600: #155eef;
+  --color-brand-700: #1149c4;
+  --color-brand-800: #143c9c;
+  --color-brand-900: #16367b;
+  --color-brand-950: #11224b;
+
+  --color-teal-500: #0e7490;
+  --color-teal-600: #0b5d74;
+
+  --color-accent-400: #fbbf24;
+  --color-accent-500: #f59e0b;
+  --color-accent-600: #d97706;
+
+  /* Currency identity. USD green, PHP blue, per the brand guide. */
+  --color-usd: #16a34a;
+  --color-php: #155eef;
+
+  /* Semantic - light */
+  --color-canvas: #f8fafc;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f1f5f9;
+  --color-line: #e2e8f0;
+  --color-line-strong: #cbd5e1;
+  --color-ink: #0f172a;
+  --color-ink-muted: #475569;
+  --color-ink-subtle: #64748b;
+
+  --color-primary: #155eef;
+  --color-primary-hover: #1149c4;
+  --color-primary-fg: #ffffff;
+
+  --color-success: #16a34a;
+  --color-success-soft: #dcfce7;
+  --color-success-ink: #14532d;
+  --color-warning: #d97706;
+  --color-warning-soft: #fef3c7;
+  --color-warning-ink: #78350f;
+  --color-danger: #dc2626;
+  --color-danger-soft: #fee2e2;
+  --color-danger-ink: #7f1d1d;
+  --color-info-soft: #dbeafe;
+  --color-info-ink: #1e3a8a;
+
+  /* Mapped from the :root stacks above so the `font-sans` / `font-mono`
+     utilities agree with what the base layer actually paints. */
+  --font-sans: var(--font-sans-stack);
+  --font-mono: var(--font-mono-stack);
+  --font-display: var(--font-display-stack);
+
+  /* ---------------------------------------------------------------------
+     Type scale
+
+     Redefined here rather than per component: these keys back Tailwind's
+     text-* utilities, so every existing `text-sm` inherits the paired
+     line-height and tracking without a single class being rewritten.
+
+     Two rules, applied consistently. Line-height tightens as size grows,
+     because leading that flatters a paragraph strangles a headline. And
+     tracking goes negative above 24px while opening slightly below 14px --
+     large type sets too loose by default, small type too tight.
+     --------------------------------------------------------------------- */
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.5;
+  --text-xs--letter-spacing: 0.01em;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.5;
+  --text-sm--letter-spacing: 0.005em;
+  --text-base: 1rem;
+  --text-base--line-height: 1.6;
+  --text-base--letter-spacing: 0em;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.55;
+  --text-lg--letter-spacing: -0.005em;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.4;
+  --text-xl--letter-spacing: -0.01em;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 1.3;
+  --text-2xl--letter-spacing: -0.015em;
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: 1.22;
+  --text-3xl--letter-spacing: -0.02em;
+  --text-4xl: 2.25rem;
+  --text-4xl--line-height: 1.15;
+  --text-4xl--letter-spacing: -0.025em;
+  --text-5xl: 3rem;
+  --text-5xl--line-height: 1.08;
+  --text-5xl--letter-spacing: -0.03em;
+  --text-6xl: 3.75rem;
+  --text-6xl--line-height: 1.05;
+  --text-6xl--letter-spacing: -0.035em;
+
+  --radius-card: 0.75rem;
+  --radius-control: 0.5rem;
+
+  /* Motion. One easing curve and two durations for the whole app -- a second
+     curve is a second opinion about how the product moves. */
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --dur-fast: 120ms;
+  --dur-base: 180ms;
+
+  --shadow-card: 0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06);
+  --shadow-pop: 0 10px 30px -12px rgb(15 23 42 / 0.22);
+}
+
+/* Semantic layer, dark. Brand hues lift slightly so they stay legible on
+   #0B1220 without changing identity. */
+.dark {
+  --color-canvas: #0b1220;
+  --color-surface: #111827;
+  --color-surface-muted: #172033;
+  --color-line: #243244;
+  --color-line-strong: #33455c;
+  --color-ink: #f8fafc;
+  --color-ink-muted: #cbd5e1;
+  --color-ink-subtle: #94a3b8;
+
+  --color-primary: #4b86f7;
+  --color-primary-hover: #6b9dfa;
+  --color-primary-fg: #06122b;
+
+  --color-usd: #3ec277;
+  --color-php: #6b9dfa;
+
+  --color-success: #3ec277;
+  --color-success-soft: #06301c;
+  --color-success-ink: #86efac;
+  --color-warning: #f0a92c;
+  --color-warning-soft: #3a2606;
+  --color-warning-ink: #fcd34d;
+  --color-danger: #f0666a;
+  --color-danger-soft: #3d1215;
+  --color-danger-ink: #fca5a5;
+  --color-info-soft: #10254d;
+  --color-info-ink: #bfdbfe;
+
+  --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+  --shadow-pop: 0 14px 34px -12px rgb(0 0 0 / 0.6);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-line);
+  }
+
+  html {
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans-stack);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Financial values line up in columns. Tabular figures, always.
+     Tracking is near-zero: Plex Mono is already fitted for column work, and
+     pulling it tighter is what makes a long peso figure start to smear. */
+  .tabular {
+    font-family: var(--font-mono-stack);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    letter-spacing: -0.005em;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Hide the spinner on number inputs: money is entered, not nudged. */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+}
+
+@layer utilities {
+  .card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+  }
+
+  /* Only for a card that is genuinely a link or a button. A hover state on a
+     static card promises an action that is not there. */
+  .card-interactive {
+    transition:
+      border-color var(--dur-base) var(--ease-out-quart),
+      box-shadow var(--dur-base) var(--ease-out-quart),
+      transform var(--dur-base) var(--ease-out-quart);
+  }
+  .card-interactive:hover {
+    border-color: var(--color-line-strong);
+    box-shadow: var(--shadow-pop);
+    transform: translateY(-1px);
+  }
+  .card-interactive:active {
+    transform: translateY(0);
+  }
+
+  /* Row tracking. A wide invoice row is hard to follow from number to amount;
+     a quiet background on hover keeps the eye on one record. */
+  .table-rows tbody tr {
+    transition: background-color var(--dur-fast) var(--ease-out-quart);
+  }
+  .table-rows tbody tr:hover {
+    background-color: var(--color-surface-muted);
+  }
+
+  /* Grid backdrop used on the landing hero only. */
+  .hero-grid {
+    background-image:
+      linear-gradient(to right, color-mix(in srgb, var(--color-line) 70%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in srgb, var(--color-line) 70%, transparent) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 90% 60% at 50% 0%, #000 40%, transparent 100%);
+  }
+
+  @media print {
+    .no-print {
+      display: none !important;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

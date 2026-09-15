@@ -1,0 +1,21 @@
+{
+  "name": "KitaFlux",
+  "shortName": "KitaFlux",
+  "tagline": "Global income. Clear local numbers.",
+  "positioning": "A modern financial workspace for Filipino freelancers to turn international earnings into accurate, organized PHP records for invoicing, payments, forex, fees, and tax-ready reporting.",
+  "personality": [
+    "professional",
+    "modern",
+    "trustworthy",
+    "financially credible",
+    "developer-friendly",
+    "clean",
+    "efficient",
+    "international",
+    "approachable"
+  ],
+  "fonts": {
+    "primary": "Inter",
+    "numbers": "JetBrains Mono"
+  }
+}
