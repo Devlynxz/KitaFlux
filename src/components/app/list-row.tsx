@@ -18,11 +18,21 @@ import { cn } from "@/lib/cn";
  * hit with a thumb), so it links to the one place a row leads. Secondary
  * actions that must not navigate go in `action`, outside the link.
  *
- * Pair with `<TableWrap className="max-sm:hidden">`, which keeps the table as
- * the layout from `sm` up.
+ * Pair with a TableWrap hidden below the same breakpoint, which keeps the
+ * table as the layout from there up:
+ *   `sm` (default) -> `<TableWrap className="max-sm:hidden">`
+ *   `md`           -> `<TableWrap className="max-md:hidden">`
+ * Use `md` for tables with six or more columns: at 640-767px they need more
+ * width than the page has and would scroll their last column out of view.
  */
-export function ListRows({ className, ...props }: React.HTMLAttributes<HTMLUListElement>) {
-  return <ul className={cn("divide-y sm:hidden", className)} {...props} />;
+const HIDE_FROM = { sm: "sm:hidden", md: "md:hidden" } as const;
+
+export function ListRows({
+  className,
+  breakpoint = "sm",
+  ...props
+}: React.HTMLAttributes<HTMLUListElement> & { breakpoint?: keyof typeof HIDE_FROM }) {
+  return <ul className={cn("divide-y", HIDE_FROM[breakpoint], className)} {...props} />;
 }
 
 export function ListRow({

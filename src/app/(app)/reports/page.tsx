@@ -144,7 +144,9 @@ export default async function ReportsPage({
             </Card>
           </div>
 
-          <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+          {/* Side by side from xl only: at lg each column is ~350px, narrower than
+              either table, which then scrolled its PHP totals out of view. */}
+          <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle>By client</CardTitle>
@@ -166,7 +168,7 @@ export default async function ReportsPage({
                   />
                 ))}
               </ListRows>
-              <TableWrap className="max-sm:hidden">
+              <TableWrap minWidth="24rem" className="max-sm:hidden">
                 <thead>
                   <tr>
                     <Th>Client</Th>
@@ -221,7 +223,7 @@ export default async function ReportsPage({
                   />
                 ))}
               </ListRows>
-              <TableWrap className="max-sm:hidden">
+              <TableWrap minWidth="24rem" className="max-sm:hidden">
                 <thead>
                   <tr>
                     <Th>Currency</Th>

@@ -133,7 +133,7 @@ export default async function InvoicesPage({
           />
         ) : (
           <>
-            <ListRows>
+            <ListRows breakpoint="md">
               {invoices.items.map((inv) => (
                 <ListRow
                   key={inv.id}
@@ -173,7 +173,7 @@ export default async function InvoicesPage({
                 />
               ))}
             </ListRows>
-            <TableWrap className="max-sm:hidden">
+            <TableWrap className="max-md:hidden">
               <thead>
                 <tr>
                   <Th>Invoice</Th>
