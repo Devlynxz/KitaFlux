@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import * as Sentry from "@sentry/nextjs";
 import { cache } from "react";
 
 import { auth } from "./auth";
@@ -68,6 +69,10 @@ export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
       invoiceNotes: true,
     },
   });
+
+  // Opaque id only -- lets an error report say how many people it affected
+  // without carrying an email. Scoped to this request by the SDK.
+  if (user) Sentry.setUser({ id: user.id });
 
   return user;
 });

@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { buildContentSecurityPolicy, cspHeaderName, cspMode, generateNonce } from "../csp";
+import {
+  buildContentSecurityPolicy,
+  cspHeaderName,
+  cspMode,
+  generateNonce,
+  sentryConnectSource,
+} from "../csp";
 
 function directives(policy: string): Map<string, string[]> {
   return new Map(
@@ -40,6 +46,36 @@ describe("buildContentSecurityPolicy", () => {
   it("upgrades insecure requests in production only", () => {
     expect(prod.has("upgrade-insecure-requests")).toBe(true);
     expect(dev.has("upgrade-insecure-requests")).toBe(false);
+  });
+});
+
+describe("sentryConnectSource", () => {
+  it("adds nothing for a SaaS DSN, which the SDK tunnels through /monitoring", () => {
+    expect(sentryConnectSource("https://abc@o123456.ingest.sentry.io/789")).toBeNull();
+    expect(sentryConnectSource("https://abc@o123456.ingest.de.sentry.io/789")).toBeNull();
+  });
+
+  it("adds exactly the origin of a self-hosted DSN, which the SDK posts to directly", () => {
+    expect(sentryConnectSource("https://abc@sentry.example.com/12")).toBe("https://sentry.example.com");
+    expect(sentryConnectSource("http://abc@localhost:9000/1")).toBe("http://localhost:9000");
+  });
+
+  it("adds nothing without a usable DSN", () => {
+    expect(sentryConnectSource(undefined)).toBeNull();
+    expect(sentryConnectSource("")).toBeNull();
+    expect(sentryConnectSource("not a url")).toBeNull();
+    expect(sentryConnectSource("javascript://abc@x/1")).toBeNull();
+  });
+
+  it("is reflected in connect-src", () => {
+    const selfHosted = directives(
+      buildContentSecurityPolicy({ nonce: "n", isDev: false, sentryDsn: "https://k@sentry.example.com/1" }),
+    );
+    expect(selfHosted.get("connect-src")).toEqual(["'self'", "https://sentry.example.com"]);
+    const saas = directives(
+      buildContentSecurityPolicy({ nonce: "n", isDev: false, sentryDsn: "https://k@o1.ingest.sentry.io/1" }),
+    );
+    expect(saas.get("connect-src")).toEqual(["'self'"]);
   });
 });
 

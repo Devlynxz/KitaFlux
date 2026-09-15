@@ -23,10 +23,15 @@
  *               but cannot run code; the script policy is what matters.
  *
  *   connect-src 'self'. Every fetch the browser makes is same-origin: Better
- *               Auth's client, server actions, the rate lookup. FX providers,
+ *               Auth's client, server actions, the rate lookup, and Sentry
+ *               reports, which go through the /monitoring tunnel. FX providers,
  *               Resend and Inngest are called from the server, where CSP does
  *               not apply. In CSP3 browsers 'self' also covers the same-origin
  *               WebSocket that development hot reload uses.
+ *               One exception: the Sentry SDK only tunnels a SaaS DSN
+ *               (oNNN.ingest.sentry.io). A self-hosted Sentry DSN is posted to
+ *               directly, so its origin -- and only its origin -- is added, or
+ *               every browser error would be silently blocked.
  *
  *   upgrade-insecure-requests  production only. On http://localhost it would
  *               rewrite same-origin requests to https and break development.
@@ -37,20 +42,41 @@
 
 export type CspMode = "enforce" | "report-only";
 
+/**
+ * The extra connect-src origin a Sentry DSN needs, or null when none is needed:
+ * no DSN, an unparseable one, or a SaaS DSN (tunnelled through /monitoring).
+ * Mirrors the SaaS check in @sentry/nextjs's client tunnel option.
+ */
+export function sentryConnectSource(dsn: string | undefined): string | null {
+  if (!dsn) return null;
+  let url: URL;
+  try {
+    url = new URL(dsn);
+  } catch {
+    return null;
+  }
+  if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+  if (/^o\d+\.ingest(?:\.[a-z]{2})?\.sentry\.io$/.test(url.hostname)) return null;
+  return url.origin;
+}
+
 export function buildContentSecurityPolicy({
   nonce,
   isDev,
+  sentryDsn,
 }: {
   nonce: string;
   isDev: boolean;
+  sentryDsn?: string;
 }): string {
+  const sentryOrigin = sentryConnectSource(sentryDsn);
   const directives: Array<[string, ...string[]]> = [
     ["default-src", "'self'"],
     ["script-src", "'self'", `'nonce-${nonce}'`, "'strict-dynamic'", ...(isDev ? ["'unsafe-eval'"] : [])],
     ["style-src", "'self'", "'unsafe-inline'"],
     ["img-src", "'self'", "blob:", "data:"],
     ["font-src", "'self'"],
-    ["connect-src", "'self'"],
+    ["connect-src", "'self'", ...(sentryOrigin ? [sentryOrigin] : [])],
     ["object-src", "'none'"],
     ["base-uri", "'self'"],
     ["form-action", "'self'"],
