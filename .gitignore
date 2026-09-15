@@ -50,3 +50,6 @@ src/generated/
 
 # Locally rendered sample invoices
 *.pdf
+
+# Local agent/editor working files (any depth)
+.claude/
