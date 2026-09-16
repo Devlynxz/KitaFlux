@@ -87,7 +87,7 @@ export default async function PaymentsPage({
           />
         ) : (
           <>
-            <ListRows>
+            <ListRows breakpoint="md">
               {payments.items.map((p) => {
                 const hasFee = !toDecimal(p.feeAmount).isZero();
                 return (
@@ -118,7 +118,7 @@ export default async function PaymentsPage({
               })}
             </ListRows>
 
-            <TableWrap className="max-sm:hidden">
+            <TableWrap className="max-md:hidden">
               <thead>
                 <tr>
                   <Th>Received</Th>

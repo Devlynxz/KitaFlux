@@ -83,8 +83,10 @@ export default async function InvoiceDetailPage({
         }
       />
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="space-y-4 lg:col-span-2">
+      {/* Three columns from xl: at lg the two-thirds column is ~460px and the
+          payments table (~570px of content) scrolled its Landed column away. */}
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+        <div className="space-y-4 xl:col-span-2">
           <Card>
             <CardHeader>
               <CardTitle>Line items</CardTitle>
@@ -104,7 +106,7 @@ export default async function InvoiceDetailPage({
                 />
               ))}
             </ListRows>
-            <TableWrap className="max-sm:hidden">
+            <TableWrap minWidth="26rem" className="max-sm:hidden">
               <thead>
                 <tr>
                   <Th>Description</Th>
@@ -216,7 +218,7 @@ export default async function InvoiceDetailPage({
                     />
                   ))}
                 </ListRows>
-                <TableWrap className="max-sm:hidden">
+                <TableWrap minWidth="36rem" className="max-sm:hidden">
                   <thead>
                     <tr>
                       <Th>Received</Th>
