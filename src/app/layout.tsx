@@ -50,13 +50,18 @@ const mono = IBM_Plex_Mono({
  *     and it now carries more of the identity, because Plex is the colder,
  *     more engineered face it sits beside.
  *
- * Only weight 800 is loaded -- the mark is the only thing that uses it.
+ * Since the brand redesign it also sets every h1-h3 (see globals.css): its
+ * rounded terminals are the closest type gets to the ribbon in the mark, so
+ * headings carry the identity while Plex keeps body, controls and figures
+ * sober. 600 and 700 are for headings, 800 for the wordmark and hero.
+ *
+ * Loaded as the variable font (no `weight` list): one file covers 600-800, and
+ * listing static weights here made Turbopack's font loader fail the build.
  */
 const display = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-display-face",
   display: "swap",
-  weight: ["800"],
 });
 
 export const metadata: Metadata = {
@@ -95,8 +100,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#F8FAFC" },
-    { media: "(prefers-color-scheme: dark)", color: "#0B1220" },
+    { media: "(prefers-color-scheme: light)", color: "#F5F8FD" },
+    { media: "(prefers-color-scheme: dark)", color: "#060D1E" },
   ],
 };
 

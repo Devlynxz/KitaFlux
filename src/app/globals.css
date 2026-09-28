@@ -33,62 +33,67 @@
     "Helvetica Neue", Arial, sans-serif;
   --font-mono-stack:
     var(--font-mono-face), ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  /* Wordmark only. The UI never uses this. Falls back through the interface
-     face, never through a bare system stack. */
+  /* The wordmark and every h1-h3. Falls back through the interface face,
+     never through a bare system stack. */
   --font-display-stack:
     var(--font-display-face), var(--font-sans-face), ui-sans-serif, system-ui, sans-serif;
 }
 
 @theme {
-  /* Brand */
-  --color-brand-50: #eef4ff;
-  --color-brand-100: #dbe7fe;
-  --color-brand-200: #bfd5fe;
-  --color-brand-300: #93bbfd;
-  --color-brand-400: #6096fa;
-  --color-brand-500: #3b78f6;
-  --color-brand-600: #155eef;
-  --color-brand-700: #1149c4;
-  --color-brand-800: #143c9c;
-  --color-brand-900: #16367b;
-  --color-brand-950: #11224b;
+  /* Logo hues, sampled from the gradient K mark (public/brand/web-logo.png).
+     Identical in both themes: they are the mark, not UI chrome. Fills only --
+     never text, never a button. Text on the light ones is --color-on-brand. */
+  --color-brand-cobalt: #0444c6;
+  --color-brand-royal: #0666e9;
+  --color-brand-azure: #0385fd;
+  --color-brand-cyan: #04c0fd;
+  --color-brand-mint: #19df93;
+  --color-coin-orange: #fe8a00;
+  --color-coin-gold: #fdce00;
+  --color-on-brand: #0a1733;
+  --color-on-brand-light: #ffffff;
 
-  --color-teal-500: #0e7490;
-  --color-teal-600: #0b5d74;
+  /* Currency identity, read off the mark: money travels the blue-cyan ribbon
+     and lands on the gold peso coin. Foreign currency is "flow", PHP is "php".
+     The bare names are fills (chip dots); -ink is for text, -soft for grounds. */
+  --color-flow: #04c0fd;
+  --color-flow-ink: #006f9e;
+  --color-flow-soft: #dcf5ff;
+  --color-php: #fdce00;
+  --color-php-ink: #8a5300;
+  --color-php-soft: #fff3c4;
 
-  --color-accent-400: #fbbf24;
-  --color-accent-500: #f59e0b;
-  --color-accent-600: #d97706;
-
-  /* Currency identity. USD green, PHP blue, per the brand guide. */
-  --color-usd: #16a34a;
-  --color-php: #155eef;
-
-  /* Semantic - light */
-  --color-canvas: #f8fafc;
+  /* Semantic - light. Neutrals lean toward the logo's cobalt. */
+  --color-canvas: #f5f8fd;
   --color-surface: #ffffff;
-  --color-surface-muted: #f1f5f9;
-  --color-line: #e2e8f0;
-  --color-line-strong: #cbd5e1;
-  --color-ink: #0f172a;
-  --color-ink-muted: #475569;
-  --color-ink-subtle: #64748b;
+  --color-surface-muted: #ecf1fa;
+  --color-line: #dae2f0;
+  --color-line-strong: #c3cee1;
+  /* Input borders: 3:1 on surface, which --color-line (decorative) is not. */
+  --color-line-control: #8595b3;
+  --color-ink: #0a1733;
+  --color-ink-muted: #43506b;
+  --color-ink-subtle: #5c6984;
 
-  --color-primary: #155eef;
-  --color-primary-hover: #1149c4;
+  --color-primary: #0558e0;
+  --color-primary-hover: #0444c6;
   --color-primary-fg: #ffffff;
+  --color-primary-soft: #e1ecff;
+  --color-focus-ring: #0558e0;
 
-  --color-success: #16a34a;
-  --color-success-soft: #dcfce7;
-  --color-success-ink: #14532d;
-  --color-warning: #d97706;
-  --color-warning-soft: #fef3c7;
-  --color-warning-ink: #78350f;
-  --color-danger: #dc2626;
-  --color-danger-soft: #fee2e2;
-  --color-danger-ink: #7f1d1d;
-  --color-info-soft: #dbeafe;
-  --color-info-ink: #1e3a8a;
+  --color-success: #12a06a;
+  --color-success-soft: #d4f7e6;
+  --color-success-ink: #05603f;
+  /* Kept on the orange side of the coin so a warning never reads as pesos. */
+  --color-warning: #e2690b;
+  --color-warning-soft: #ffe8d1;
+  --color-warning-ink: #8f3b00;
+  --color-danger: #d42a37;
+  --color-danger-fg: #ffffff;
+  --color-danger-soft: #fde3e5;
+  --color-danger-ink: #8b1622;
+  --color-info-soft: #e1ecff;
+  --color-info-ink: #0a3a99;
 
   /* Mapped from the :root stacks above so the `font-sans` / `font-mono`
      utilities agree with what the base layer actually paints. */
@@ -139,8 +144,10 @@
   --text-6xl--line-height: 1.05;
   --text-6xl--letter-spacing: -0.035em;
 
-  --radius-card: 0.75rem;
-  --radius-control: 0.5rem;
+  /* Soft, like the rounded strokes of the mark. */
+  --radius-card: 1rem;
+  --radius-control: 0.625rem;
+  --radius-tile: 1.5rem;
 
   /* Motion. One easing curve and two durations for the whole app -- a second
      curve is a second opinion about how the product moves. */
@@ -148,43 +155,59 @@
   --dur-fast: 120ms;
   --dur-base: 180ms;
 
-  --shadow-card: 0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06);
-  --shadow-pop: 0 10px 30px -12px rgb(15 23 42 / 0.22);
+  --shadow-card: 0 1px 2px 0 rgb(10 23 51 / 0.05), 0 1px 3px 0 rgb(10 23 51 / 0.07);
+  /* Cobalt-tinted, so a lifted surface reads as the brand's own light. */
+  --shadow-pop: 0 12px 32px -12px rgb(4 68 198 / 0.28);
 }
 
-/* Semantic layer, dark. Brand hues lift slightly so they stay legible on
-   #0B1220 without changing identity. */
+/* The mark's two gradients. Plain :root, not @theme: nothing generates a
+   utility from them, so @theme would tree-shake them away (see the font note
+   above). Brand moments only -- the landing hero edge, the auth panel, the
+   coin marker. Never behind text, never on a button. */
+:root {
+  --gradient-flux: linear-gradient(90deg, #0444c6 0%, #0385fd 36%, #04c0fd 64%, #19df93 100%);
+  --gradient-coin: linear-gradient(135deg, #fe8a00 0%, #fdce00 100%);
+}
+
+/* Semantic layer, dark. Logo hues stay put; only the UI layer moves. Every
+   text token keeps 4.5:1 on canvas, surface and surface-muted. */
 .dark {
-  --color-canvas: #0b1220;
-  --color-surface: #111827;
-  --color-surface-muted: #172033;
-  --color-line: #243244;
-  --color-line-strong: #33455c;
-  --color-ink: #f8fafc;
-  --color-ink-muted: #cbd5e1;
-  --color-ink-subtle: #94a3b8;
+  --color-canvas: #060d1e;
+  --color-surface: #0b1630;
+  --color-surface-muted: #122143;
+  --color-line: #1e2e52;
+  --color-line-strong: #2c3f68;
+  --color-line-control: #5a6d96;
+  --color-ink: #edf2fc;
+  --color-ink-muted: #b4c0da;
+  --color-ink-subtle: #8a98b8;
 
-  --color-primary: #4b86f7;
-  --color-primary-hover: #6b9dfa;
-  --color-primary-fg: #06122b;
+  --color-primary: #4d95ff;
+  --color-primary-hover: #7aafff;
+  --color-primary-fg: #04102b;
+  --color-primary-soft: #10254d;
+  --color-focus-ring: #7aafff;
 
-  --color-usd: #3ec277;
-  --color-php: #6b9dfa;
+  --color-flow-ink: #4fd4ff;
+  --color-flow-soft: #062c3d;
+  --color-php-ink: #ffd23f;
+  --color-php-soft: #3a2c00;
 
-  --color-success: #3ec277;
-  --color-success-soft: #06301c;
-  --color-success-ink: #86efac;
-  --color-warning: #f0a92c;
-  --color-warning-soft: #3a2606;
-  --color-warning-ink: #fcd34d;
-  --color-danger: #f0666a;
-  --color-danger-soft: #3d1215;
-  --color-danger-ink: #fca5a5;
-  --color-info-soft: #10254d;
-  --color-info-ink: #bfdbfe;
+  --color-success: #3ddc97;
+  --color-success-soft: #06301f;
+  --color-success-ink: #7eebc0;
+  --color-warning: #ff9a3d;
+  --color-warning-soft: #3d1f05;
+  --color-warning-ink: #ffb46e;
+  --color-danger: #f2555f;
+  --color-danger-fg: #1a0306;
+  --color-danger-soft: #3d0f15;
+  --color-danger-ink: #ff9ea6;
+  --color-info-soft: #0f2552;
+  --color-info-ink: #b9d3ff;
 
-  --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.4);
-  --shadow-pop: 0 14px 34px -12px rgb(0 0 0 / 0.6);
+  --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.45);
+  --shadow-pop: 0 14px 34px -12px rgb(0 0 0 / 0.65);
 }
 
 @layer base {
@@ -207,6 +230,14 @@
     -webkit-font-smoothing: antialiased;
   }
 
+  /* Headings take the display face, whose rounded terminals and high-junction
+     K echo the mark. Body, labels and controls stay on the interface face. */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display-stack);
+  }
+
   /* Financial values line up in columns. Tabular figures, always.
      Tracking is near-zero: Plex Mono is already fitted for column work, and
      pulling it tighter is what makes a long peso figure start to smear. */
@@ -218,7 +249,7 @@
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-primary);
+    outline: 2px solid var(--color-focus-ring);
     outline-offset: 2px;
     border-radius: 4px;
   }
@@ -287,6 +318,15 @@
       linear-gradient(to bottom, color-mix(in srgb, var(--color-line) 70%, transparent) 1px, transparent 1px);
     background-size: 56px 56px;
     mask-image: radial-gradient(ellipse 90% 60% at 50% 0%, #000 40%, transparent 100%);
+  }
+  /* The mark's ribbon as a 3px top edge: the one place the page shows it. */
+  .hero-grid::after {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 3px;
+    pointer-events: none;
+    background-image: var(--gradient-flux);
   }
 
   @media print {

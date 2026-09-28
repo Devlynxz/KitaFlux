@@ -43,8 +43,8 @@ size it was drawn for:
 The wordmark is **live text, not artwork**: it stays crisp at any size, follows
 the theme's ink colour, is selectable and readable to assistive tech, and needs
 no separate light/dark variant. It is set in **Plus Jakarta Sans 800** with
-size-dependent negative tracking — a display face deliberately distinct from
-Inter, because a wordmark set in the interface font reads as a heading rather
+size-dependent negative tracking — a display face deliberately distinct from the
+interface face, because a wordmark set in the interface font reads as a heading rather
 than a logo. `components/brand/logo.tsx` has the reasoning and three size
 variants (`sm` sidebar, `md` default, `lg` hero).
 
@@ -52,9 +52,14 @@ The PDF embeds the mark as a data URI (`server/pdf/logo-data.ts`, regenerate
 with `node scripts/inline-logo.mjs`) so rendering never depends on the
 filesystem or the network inside a serverless function.
 
-`kitaflux-brand/` is the earlier geometric brand pack. Its **colour tokens and
-type rules are still authoritative** and drive `globals.css`; its SVG logos are
-superseded by the asset set above and are no longer referenced by the app.
+Colour is taken from the mark: money travels the blue-cyan ribbon and lands on
+the gold peso coin, so foreign-currency figures tint cyan (`flow-ink`) and PHP
+figures tint gold (`php-ink`). Headings use Plus Jakarta Sans; the interface
+and all figures stay on IBM Plex Sans and Plex Mono.
+
+`kitaflux-brand/` holds the **authoritative colour tokens and type rules**
+(`colors.json`, `brand-guidelines.md`) that drive `globals.css`. Its SVG logos
+are the retired geometric mark and are not referenced by the app.
 
 
 ## Stack

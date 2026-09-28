@@ -38,13 +38,13 @@ export function CardBody({ className, ...props }: React.HTMLAttributes<HTMLDivEl
 // --- Form controls ----------------------------------------------------------
 
 const controlBase =
-  "w-full rounded-[var(--radius-control)] border border-[var(--color-line-strong)] " +
+  "w-full rounded-[var(--radius-control)] border border-[var(--color-line-control)] " +
   "bg-[var(--color-surface)] px-3 text-sm text-[var(--color-ink)] " +
   "placeholder:text-[var(--color-ink-subtle)] " +
   "transition-[border-color,box-shadow] duration-[var(--dur-fast)] ease-[var(--ease-out-quart)] " +
   "hover:border-[var(--color-ink-subtle)] " +
   "focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 " +
-  "focus:ring-[var(--color-primary)]/20 disabled:opacity-60 " +
+  "focus:ring-[var(--color-focus-ring)] disabled:opacity-60 " +
   "aria-[invalid=true]:border-[var(--color-danger)]";
 
 export const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(

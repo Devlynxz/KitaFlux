@@ -65,18 +65,19 @@ function layout(body: string): string {
   const header = appUrl
     ? `<img src="${appUrl}/brand/email-header.png" alt="KitaFlux" width="180" height="60"
            style="display:block;border:0;outline:none;text-decoration:none">`
-    : `<span style="font-size:17px;font-weight:700;letter-spacing:-0.02em">Kita<span style="color:#155eef">Flux</span></span>`;
+    : `<span style="font-size:17px;font-weight:700;letter-spacing:-0.02em">Kita<span style="color:#0558e0">Flux</span></span>`;
 
   return `<!doctype html>
-<html><body style="margin:0;padding:24px;background:#f8fafc;font-family:Inter,Arial,Helvetica,sans-serif;color:#0f172a">
+<html><body style="margin:0;padding:24px;background:#f5f8fd;font-family:'IBM Plex Sans',Arial,Helvetica,sans-serif;color:#0a1733">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto">
     <tr><td style="padding-bottom:20px">
       ${header}
     </td></tr>
-    <tr><td style="background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;padding:28px">
+    <tr><td style="height:3px;line-height:3px;font-size:0;border-radius:3px;background:#0385fd;background-image:linear-gradient(90deg,#0444c6 0%,#0385fd 36%,#04c0fd 64%,#19df93 100%)">&nbsp;</td></tr>
+    <tr><td style="background:#ffffff;border:1px solid #dae2f0;border-top:0;border-radius:0 0 16px 16px;padding:28px">
       ${body}
     </td></tr>
-    <tr><td style="padding-top:16px;font-size:12px;color:#64748b">
+    <tr><td style="padding-top:16px;font-size:12px;color:#5c6984">
       Sent with KitaFlux — global income, clear local numbers.
     </td></tr>
   </table>
@@ -118,11 +119,11 @@ export async function sendInvoiceEmail(invoice: FullInvoice): Promise<DeliveryRe
         Invoice <strong>${escapeHtml(number)}</strong> is attached, for <strong>${escapeHtml(total)}</strong>.
       </p>
       <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;font-size:14px;border-collapse:collapse">
-        <tr><td style="padding:6px 0;color:#475569">Issued</td><td style="padding:6px 0;text-align:right">${formatDate(invoice.issueDate)}</td></tr>
-        <tr><td style="padding:6px 0;color:#475569">Due</td><td style="padding:6px 0;text-align:right"><strong>${formatDate(invoice.dueDate)}</strong></td></tr>
-        <tr><td style="padding:6px 0;color:#475569">Amount</td><td style="padding:6px 0;text-align:right;font-weight:600">${escapeHtml(total)}</td></tr>
+        <tr><td style="padding:6px 0;color:#43506b">Issued</td><td style="padding:6px 0;text-align:right">${formatDate(invoice.issueDate)}</td></tr>
+        <tr><td style="padding:6px 0;color:#43506b">Due</td><td style="padding:6px 0;text-align:right"><strong>${formatDate(invoice.dueDate)}</strong></td></tr>
+        <tr><td style="padding:6px 0;color:#43506b">Amount</td><td style="padding:6px 0;text-align:right;font-weight:600">${escapeHtml(total)}</td></tr>
       </table>
-      ${invoice.notes ? `<p style="margin:20px 0 0;font-size:14px;color:#475569;line-height:1.55">${escapeHtml(invoice.notes)}</p>` : ""}
+      ${invoice.notes ? `<p style="margin:20px 0 0;font-size:14px;color:#43506b;line-height:1.55">${escapeHtml(invoice.notes)}</p>` : ""}
       <p style="margin:24px 0 0;font-size:14px">Thank you,<br>${escapeHtml(from.name)}</p>`;
 
     const { data, error } = await resend.emails.send({
@@ -205,9 +206,9 @@ export async function sendPasswordResetEmail(to: string, url: string): Promise<D
         Someone asked to reset the password for your KitaFlux account. The link below works once and expires in one hour.
       </p>
       <p style="margin:0 0 24px">
-        <a href="${escapeHtml(url)}" style="display:inline-block;background:#155eef;color:#ffffff;text-decoration:none;font-weight:600;font-size:14px;padding:10px 18px;border-radius:8px">Choose a new password</a>
+        <a href="${escapeHtml(url)}" style="display:inline-block;background:#0558e0;color:#ffffff;text-decoration:none;font-weight:600;font-size:14px;padding:10px 18px;border-radius:10px">Choose a new password</a>
       </p>
-      <p style="margin:0;font-size:13px;color:#64748b;line-height:1.55">
+      <p style="margin:0;font-size:13px;color:#5c6984;line-height:1.55">
         If you did not ask for this, you can ignore this email — your password stays the same.
       </p>`;
 
