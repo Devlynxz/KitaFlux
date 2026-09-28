@@ -26,7 +26,7 @@ export function UserMenu({ user }: { user: { name: string; email: string } }) {
     <div className="flex items-center gap-2">
       <div
         aria-hidden
-        className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-brand-600)]/12 text-xs font-semibold text-[var(--color-primary)]"
+        className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary-soft)] text-xs font-semibold text-[var(--color-primary)]"
       >
         {initial}
       </div>

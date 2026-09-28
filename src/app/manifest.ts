@@ -20,8 +20,8 @@ export default function manifest(): MetadataRoute.Manifest {
       "Invoice international clients in USD and keep accurate peso records after forex and platform fees.",
     start_url: "/dashboard",
     display: "standalone",
-    background_color: "#F8FAFC",
-    theme_color: "#155EEF",
+    background_color: "#F5F8FD",
+    theme_color: "#0558E0",
     icons: [
       { src: "/favicon-32.png", sizes: "32x32", type: "image/png", purpose: "any" },
       { src: "/brand/web-logo.png", sizes: "192x192", type: "image/png", purpose: "any" },

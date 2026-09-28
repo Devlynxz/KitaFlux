@@ -326,7 +326,7 @@ export function PaymentForm({
               </div>
               <div>
                 <dt className="text-xs text-[var(--color-ink-subtle)]">Lands in your bank</dt>
-                <dd className="tabular mt-1 text-lg font-semibold text-[var(--color-php)]">
+                <dd className="tabular mt-1 text-lg font-semibold text-[var(--color-php-ink)]">
                   {formatMoney(preview.result.homeAmount, homeCurrency)}
                 </dd>
               </div>

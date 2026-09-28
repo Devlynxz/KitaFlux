@@ -55,7 +55,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
               "flex items-center gap-2.5 rounded-[var(--radius-control)] px-3 py-2 text-sm transition-colors",
               active
                 ? // Brand guide: sidebar stays neutral, primary only for active.
-                  "bg-[var(--color-brand-600)]/10 font-semibold text-[var(--color-primary)]"
+                  "bg-[var(--color-primary-soft)] font-semibold text-[var(--color-primary)]"
                 : "text-[var(--color-ink-muted)] hover:bg-[var(--color-surface-muted)] hover:text-[var(--color-ink)]",
             )}
           >

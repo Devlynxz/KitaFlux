@@ -14,6 +14,10 @@ import { getSessionUser } from "@/server/session";
  * the right that states what the app does. The brand guide asks for auth that
  * is "simple, credible, product-focused", so the panel carries no testimonial
  * or marketing flourish -- just the three numbers the app tracks.
+ *
+ * The panel is the mark's own ground: cobalt, with the ribbon as its top edge
+ * and the landed peso figure in the coin's gold (5.3:1 on cobalt). It is a
+ * brand surface, so it looks the same in both themes.
  */
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
   const user = await getSessionUser();
@@ -30,30 +34,31 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
         </div>
       </div>
 
-      <aside className="relative hidden flex-col justify-center bg-[#0B1220] px-12 text-[#F8FAFC] lg:flex">
+      <aside className="relative hidden flex-col justify-center bg-[var(--color-brand-cobalt)] px-12 text-[var(--color-on-brand-light)] lg:flex">
+        <div aria-hidden className="absolute inset-x-0 top-0 h-[3px] bg-[image:var(--gradient-flux)]" />
         <div className="max-w-md">
-          <p className="text-sm font-medium text-[#7DD3FC]">Global income. Clear local numbers.</p>
-          <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-tight">
+          <p className="text-sm font-medium text-[var(--color-on-brand-light)]/80">Global income. Clear local numbers.</p>
+          <h2 className="mt-3 text-3xl font-extrabold leading-tight tracking-tight">
             Three numbers, not one.
           </h2>
-          <p className="mt-4 text-sm leading-relaxed text-[#CBD5E1]">
+          <p className="mt-4 text-sm leading-relaxed text-[var(--color-on-brand-light)]/80">
             What you invoiced, what the platform actually sent, and what landed in your bank in
             pesos after fees and forex. KitaFlux keeps all three, at the rate on the day the money
             arrived.
           </p>
 
           <dl className="mt-10 space-y-5">
-            <div className="flex items-baseline justify-between gap-6 border-b border-[#243244] pb-4">
-              <dt className="text-sm text-[#CBD5E1]">Invoiced</dt>
+            <div className="flex items-baseline justify-between gap-6 border-b border-[var(--color-on-brand-light)]/20 pb-4">
+              <dt className="text-sm text-[var(--color-on-brand-light)]/80">Invoiced</dt>
               <dd className="tabular text-lg font-semibold">$1,200.00</dd>
             </div>
-            <div className="flex items-baseline justify-between gap-6 border-b border-[#243244] pb-4">
-              <dt className="text-sm text-[#CBD5E1]">After platform fees</dt>
+            <div className="flex items-baseline justify-between gap-6 border-b border-[var(--color-on-brand-light)]/20 pb-4">
+              <dt className="text-sm text-[var(--color-on-brand-light)]/80">After platform fees</dt>
               <dd className="tabular text-lg font-semibold">$1,185.60</dd>
             </div>
             <div className="flex items-baseline justify-between gap-6">
-              <dt className="text-sm text-[#CBD5E1]">Landed at 57.85</dt>
-              <dd className="tabular text-lg font-semibold text-[#7DD3FC]">₱68,586.96</dd>
+              <dt className="text-sm text-[var(--color-on-brand-light)]/80">Landed at 57.85</dt>
+              <dd className="tabular text-lg font-semibold text-[var(--color-coin-gold)]">₱68,586.96</dd>
             </div>
           </dl>
         </div>

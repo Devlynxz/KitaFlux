@@ -102,14 +102,14 @@ export default async function HomePage() {
                   </dt>
                   <dd className="tabular text-base font-semibold">$1,185.60</dd>
                 </div>
-                <div className="flex items-center justify-between bg-[var(--color-surface-muted)] px-5 py-3.5">
+                <div className="flex items-center justify-between bg-[var(--color-php-soft)] px-5 py-3.5">
                   <dt className="text-sm font-medium">
                     Landed in your bank
                     <span className="ml-1.5 text-xs font-normal text-[var(--color-ink-subtle)]">
                       at 57.85 on 5 Mar
                     </span>
                   </dt>
-                  <dd className="tabular text-lg font-semibold text-[var(--color-php)]">
+                  <dd className="tabular text-lg font-semibold text-[var(--color-php-ink)]">
                     ₱68,586.96
                   </dd>
                 </div>
@@ -131,7 +131,7 @@ export default async function HomePage() {
           <div className="mt-10 grid gap-6 sm:grid-cols-2">
             {FEATURES.map(({ icon: Icon, title, body }) => (
               <div key={title} className="card p-6">
-                <div className="flex size-9 items-center justify-center rounded-[var(--radius-control)] bg-[var(--color-brand-600)]/10 text-[var(--color-primary)]">
+                <div className="flex size-9 items-center justify-center rounded-[var(--radius-control)] bg-[var(--color-primary-soft)] text-[var(--color-primary)]">
                   <Icon className="size-4.5" />
                 </div>
                 <h3 className="mt-4 text-sm font-semibold">{title}</h3>

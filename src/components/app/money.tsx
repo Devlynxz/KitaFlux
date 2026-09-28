@@ -6,7 +6,8 @@ import { cn } from "@/lib/cn";
  *
  * Two things it guarantees that scattered `formatMoney` calls would not:
  * tabular figures, so columns of numbers align; and a currency tint that is
- * consistent app-wide (USD green, PHP blue, per the brand guide) rather than
+ * consistent app-wide, read off the mark: foreign currency in the ribbon's
+ * cyan (still travelling), PHP in the coin's gold (landed) rather than
  * decided per screen.
  */
 export function Money({
@@ -27,8 +28,8 @@ export function Money({
   const tintClass = !tint
     ? undefined
     : code === "PHP"
-      ? "text-[var(--color-php)]"
-      : "text-[var(--color-usd)]";
+      ? "text-[var(--color-php-ink)]"
+      : "text-[var(--color-flow-ink)]";
 
   return (
     <span className={cn("tabular", tintClass, className)}>

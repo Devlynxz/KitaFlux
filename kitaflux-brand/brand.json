@@ -15,7 +15,9 @@
     "approachable"
   ],
   "fonts": {
-    "primary": "Inter",
-    "numbers": "JetBrains Mono"
-  }
+    "display": "Plus Jakarta Sans",
+    "primary": "IBM Plex Sans",
+    "numbers": "IBM Plex Mono"
+  },
+  "designSystem": "https://claude.ai/artifact/A4QaMatcDS6KSA3S7GYEbu"
 }
