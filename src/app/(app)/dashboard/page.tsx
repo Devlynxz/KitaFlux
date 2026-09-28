@@ -23,21 +23,20 @@ import { requireUser } from "@/server/session";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
-/** Outstanding totals, one line per currency. Never summed across currencies. */
-function CurrencyList({
-  totals,
-  tone = "default",
-}: {
-  totals: Array<{ currency: string; amount: string }>;
-  tone?: "default" | "danger";
-}) {
+/**
+ * Outstanding totals, one line per currency. Never summed across currencies.
+ *
+ * Never coloured by urgency: a stat is a summary, not an alarm. Overdue money
+ * says so in its hint, which links to the list (see the design system's Stat).
+ */
+function CurrencyList({ totals }: { totals: Array<{ currency: string; amount: string }> }) {
   if (totals.length === 0) {
-    return <span className="text-2xl font-semibold tracking-tight text-[var(--color-ink-subtle)]">—</span>;
+    return <span className="text-[var(--color-ink-subtle)]">—</span>;
   }
   return (
     <div className="space-y-0.5">
       {totals.map((t) => (
-        <div key={t.currency} className={tone === "danger" ? "text-[var(--color-danger)]" : undefined}>
+        <div key={t.currency}>
           <Money amount={t.amount} currency={t.currency} withCode={totals.length > 1} />
         </div>
       ))}
@@ -97,68 +96,55 @@ export default async function DashboardPage() {
         }
       />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Card>
-          <CardBody>
-            <Stat
-              label="Outstanding"
-              hint={
-                s.draftCount > 0
-                  ? `${s.draftCount} draft${s.draftCount === 1 ? "" : "s"} not yet sent`
-                  : "Sent and not yet paid"
-              }
-            >
-              <CurrencyList totals={s.outstanding} />
-            </Stat>
-          </CardBody>
-        </Card>
+        {/* One card, stats in a row, led by what actually landed in pesos. */}
+      <Card>
+        <CardBody className="grid grid-cols-1 gap-x-6 gap-y-5 py-5 sm:grid-cols-2 xl:grid-cols-4">
+          <Stat
+            label={`Received ${s.quarterLabel}`}
+            hint={
+              delta === null
+                ? "Net of platform fees, at the rate on each payment date"
+                : `${delta.isNegative() ? "" : "+"}${delta.toString()}% vs last quarter`
+            }
+          >
+            <Money amount={s.receivedThisQuarter} currency={s.homeCurrency} tint />
+          </Stat>
 
-        <Card>
-          <CardBody>
-            <Stat
-              label="Overdue"
-              hint={
-                s.overdueCount > 0 ? (
-                  <Link href="/invoices?status=OVERDUE" className="text-[var(--color-danger)] hover:underline">
-                    {s.overdueCount} invoice{s.overdueCount === 1 ? "" : "s"} past due
-                  </Link>
-                ) : (
-                  "Nothing past due"
-                )
-              }
-            >
-              <CurrencyList totals={s.overdue} tone="danger" />
-            </Stat>
-          </CardBody>
-        </Card>
+          <Stat label="Received last quarter" hint="For comparison">
+            <span className="text-[var(--color-ink-muted)]">
+              <Money amount={s.receivedLastQuarter} currency={s.homeCurrency} />
+            </span>
+          </Stat>
 
-        <Card>
-          <CardBody>
-            <Stat
-              label={`Received ${s.quarterLabel}`}
-              hint={
-                delta === null
-                  ? "Net of platform fees, at the rate on each payment date"
-                  : `${delta.isNegative() ? "" : "+"}${delta.toString()}% vs last quarter`
-              }
-            >
-              <Money amount={s.receivedThisQuarter} currency={s.homeCurrency} tint />
-            </Stat>
-          </CardBody>
-        </Card>
+          <Stat
+            label="Outstanding"
+            hint={
+              s.draftCount > 0
+                ? `${s.draftCount} draft${s.draftCount === 1 ? "" : "s"} not yet sent`
+                : "Sent and not yet paid"
+            }
+          >
+            <CurrencyList totals={s.outstanding} />
+          </Stat>
 
-        <Card>
-          <CardBody>
-            <Stat label="Received last quarter" hint="For comparison">
-              <span className="text-[var(--color-ink-muted)]">
-                <Money amount={s.receivedLastQuarter} currency={s.homeCurrency} />
-              </span>
-            </Stat>
-          </CardBody>
-        </Card>
-      </div>
+          <Stat
+            label="Overdue"
+            hint={
+              s.overdueCount > 0 ? (
+                <Link href="/invoices?status=OVERDUE" className="text-[var(--color-danger)] hover:underline">
+                  {s.overdueCount} invoice{s.overdueCount === 1 ? "" : "s"} past due
+                </Link>
+              ) : (
+                "Nothing past due"
+              )
+            }
+          >
+            <CurrencyList totals={s.overdue} />
+          </Stat>
+        </CardBody>
+      </Card>
 
-      {s.overdueCount > 0 ? (
+    {s.overdueCount > 0 ? (
         <div className="mt-4 flex items-start gap-3 rounded-[var(--radius-card)] bg-[var(--color-danger-soft)] px-4 py-3 text-sm text-[var(--color-danger-ink)]">
           <TriangleAlert className="mt-0.5 size-4 shrink-0" />
           <p>

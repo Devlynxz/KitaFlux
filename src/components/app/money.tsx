@@ -38,7 +38,13 @@ export function Money({
   );
 }
 
-/** A headline figure with its label, as used across the dashboard. */
+/**
+ * A headline figure with its label, as used across the dashboard.
+ *
+ * The value is set in the figures face at 24px, placeholders included, so a row
+ * of stats shares one baseline. Tint it through `Money tint`, never by urgency.
+ * Group stats in one card rather than a card each.
+ */
 export function Stat({
   label,
   children,
@@ -53,7 +59,7 @@ export function Stat({
   return (
     <div className={cn("min-w-0", className)}>
       <p className="text-xs font-medium text-[var(--color-ink-subtle)]">{label}</p>
-      <div className="mt-1.5 text-2xl font-semibold">{children}</div>
+      <div className="tabular mt-1.5 text-2xl font-semibold tracking-[-0.01em]">{children}</div>
       {hint ? <div className="mt-1 text-xs text-[var(--color-ink-muted)]">{hint}</div> : null}
     </div>
   );
